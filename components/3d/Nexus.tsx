@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useRef, useMemo, useEffect } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import { useStore } from '../../store';
@@ -22,6 +22,23 @@ export const Nexus: React.FC = () => {
     }
   });
 
+  const torusGeometry = useMemo(() => new THREE.TorusGeometry(1, 0.1, 16, 100), []);
+  const torusMaterial = useMemo(() => new THREE.MeshBasicMaterial({ color: activeColor, transparent: true, opacity: 0.4, wireframe: true }), [activeColor]);
+  const instancedMeshRef = useRef<THREE.InstancedMesh>(null);
+
+  useEffect(() => {
+    if (instancedMeshRef.current) {
+      const matrix = new THREE.Matrix4();
+      for (let i = 0; i < 12; i++) {
+        matrix.makeRotationFromEuler(new THREE.Euler(i * 0.5, i * 0.5, 0));
+        const radius = 5 + i * 0.5;
+        matrix.scale(new THREE.Vector3(radius, radius, radius));
+        instancedMeshRef.current.setMatrixAt(i, matrix);
+      }
+      instancedMeshRef.current.instanceMatrix.needsUpdate = true;
+    }
+  }, [torusGeometry]);
+
   return (
     <group ref={groupRef} position={[0, 0, 0]}>
       {/* Central Energy Source */}
@@ -32,12 +49,7 @@ export const Nexus: React.FC = () => {
       <pointLight intensity={1000} color={activeColor} distance={50} />
 
       {/* Interconnected Geometry */}
-      {Array.from({ length: 12 }).map((_, i) => (
-        <mesh key={i} rotation={[i * 0.5, i * 0.5, 0]}>
-          <torusGeometry args={[5 + i * 0.5, 0.1, 16, 100]} />
-          <meshBasicMaterial color={activeColor} transparent opacity={0.4} wireframe />
-        </mesh>
-      ))}
+      <instancedMesh ref={instancedMeshRef} args={[torusGeometry, torusMaterial, 12]} />
     </group>
   );
 };

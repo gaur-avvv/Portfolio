@@ -81,13 +81,14 @@ export const VoxelWorld: React.FC = () => {
     groupRef.current.rotation.y = time * 0.08;
 
     // Update Voxel Instances
+    const rotation = new THREE.Euler(time * 0.2, time * 0.3, 0);
     for (let i = 0; i < VOXEL_COUNT; i++) {
       tempObject.position.set(
         voxelPositions[i * 3],
         voxelPositions[i * 3 + 1],
         voxelPositions[i * 3 + 2]
       );
-      tempObject.rotation.set(time * 0.2, time * 0.3, 0);
+      tempObject.rotation.copy(rotation);
       
       const wave = Math.sin(time * 3 + i * 0.1) * 0.01;
       const s = 0.035 + wave;

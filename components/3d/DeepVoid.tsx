@@ -102,7 +102,7 @@ export const DeepVoid: React.FC = () => {
   const cosmicDustRef = useRef<THREE.Points>(null);
   const starMistRef = useRef<THREE.Points>(null);
   const glowingParticlesRef = useRef<THREE.Points>(null);
-  const darkMatterRef = useRef<THREE.Group>(null);
+  const darkMatterRef = useRef<THREE.InstancedMesh>(null);
   const shaderRef = useRef<THREE.ShaderMaterial>(null);
   const starShaderRef = useRef<THREE.ShaderMaterial>(null);
   const glowingStarShaderRef = useRef<THREE.ShaderMaterial>(null);
@@ -298,6 +298,9 @@ export const DeepVoid: React.FC = () => {
     return data;
   }, []);
 
+  const darkMatterPositions = useRef(darkMatterData.map(d => d.position.clone()));
+  const tempObject = useMemo(() => new THREE.Object3D(), []);
+
   useFrame((state) => {
     const time = state.clock.getElapsedTime();
     const isLevel5 = scrollProgress > 0.8;
@@ -372,12 +375,18 @@ export const DeepVoid: React.FC = () => {
     // Animate dark matter spheres
     if (darkMatterRef.current) {
       darkMatterRef.current.visible = scrollProgress > 0.95;
-      darkMatterRef.current.children.forEach((child, i) => {
-        const d = darkMatterData[i];
-        child.position.y += Math.sin(time * 0.2 + i) * d.speed * 50;
-        child.position.x += Math.cos(time * 0.2 + i) * d.speed * 50;
-        child.position.z += Math.sin(time * 0.1 + i) * d.speed * 20;
+      darkMatterData.forEach((d, i) => {
+        const pos = darkMatterPositions.current[i];
+        pos.y += Math.sin(time * 0.2 + i) * d.speed * 50;
+        pos.x += Math.cos(time * 0.2 + i) * d.speed * 50;
+        pos.z += Math.sin(time * 0.1 + i) * d.speed * 20;
+        
+        tempObject.position.copy(pos);
+        tempObject.scale.setScalar(d.size);
+        tempObject.updateMatrix();
+        darkMatterRef.current.setMatrixAt(i, tempObject.matrix);
       });
+      darkMatterRef.current.instanceMatrix.needsUpdate = true;
     }
   });
 
@@ -479,14 +488,10 @@ export const DeepVoid: React.FC = () => {
       </points>
 
       {/* Dark Matter Spheres */}
-      <group ref={darkMatterRef}>
-        {darkMatterData.map((d, i) => (
-          <mesh key={i} position={d.position}>
-            <sphereGeometry args={[d.size, 16, 16]} />
-            <meshStandardMaterial color="#222" transparent opacity={0.3} />
-          </mesh>
-        ))}
-      </group>
+      <instancedMesh ref={darkMatterRef} args={[undefined, undefined, darkMatterData.length]}>
+        <sphereGeometry args={[1, 16, 16]} />
+        <meshStandardMaterial color="#222" transparent opacity={0.3} />
+      </instancedMesh>
 
       {/* The Universal Atomic Swarm (Glittering Particles) */}
       <points ref={atomicRef}>

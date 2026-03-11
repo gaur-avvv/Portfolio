@@ -11,7 +11,9 @@ export const HyperVoid: React.FC = () => {
   const gateRef = useRef<THREE.Group>(null);
   const coreRef = useRef<THREE.Group>(null);
   const scatterRef = useRef<THREE.Points>(null);
+  const shardsRef = useRef<THREE.InstancedMesh>(null);
   const ambientLightRef = useRef<THREE.PointLight>(null);
+  const lightConeRef = useRef<THREE.Mesh>(null);
   
   const scatterParticles = useMemo(() => {
     const pos = new Float32Array(SCATTER_COUNT * 3);
@@ -70,6 +72,22 @@ export const HyperVoid: React.FC = () => {
         child.rotation.x -= 0.01;
       });
     }
+
+    if (lightConeRef.current) {
+      const material = lightConeRef.current.material as THREE.MeshBasicMaterial;
+      material.opacity = 0.03 + Math.sin(time * 2) * 0.01;
+    }
+
+    if (shardsRef.current) {
+      const matrix = new THREE.Matrix4();
+      shards.forEach((shard, i) => {
+        const z = ((shard.z + time * shard.speed * 55) % 80) - 50;
+        matrix.setPosition(Math.cos(shard.angle) * shard.radius, Math.sin(shard.angle) * shard.radius, z);
+        shardsRef.current!.setMatrixAt(i, matrix);
+      });
+      shardsRef.current.instanceMatrix.needsUpdate = true;
+      shardsRef.current.visible = scrollProgress > 0.55 && scrollProgress < 0.75;
+    }
   });
 
   return (
@@ -78,6 +96,18 @@ export const HyperVoid: React.FC = () => {
       <pointLight ref={ambientLightRef} position={[0, 20, -45]} color="#facc15" intensity={150} distance={200} decay={1.2} />
       <pointLight position={[15, -15, -45]} color="#facc15" intensity={100} distance={150} decay={1.2} />
       <pointLight position={[-15, -15, -45]} color="#facc15" intensity={100} distance={150} decay={1.2} />
+
+      {/* Volumetric Light Cone */}
+      <mesh ref={lightConeRef} position={[0, 0, -40]}>
+        <coneGeometry args={[15, 60, 32]} />
+        <meshBasicMaterial
+          color="#facc15"
+          transparent
+          opacity={0.03}
+          side={THREE.DoubleSide}
+          depthWrite={false}
+        />
+      </mesh>
 
       {/* Scattering Neon Glow Particles */}
       <points ref={scatterRef}>
@@ -130,11 +160,10 @@ export const HyperVoid: React.FC = () => {
       </group>
 
       {/* Fast Traveling Data Shards */}
-      <group position={[0, 0, -30]}>
-        {shards.map((shard, i) => (
-          <Shard key={i} {...shard} />
-        ))}
-      </group>
+      <instancedMesh ref={shardsRef} args={[undefined, undefined, shards.length]}>
+        <octahedronGeometry args={[0.5, 0]} />
+        <meshStandardMaterial color="#facc15" emissive="#facc15" emissiveIntensity={3.0} transparent opacity={0.6} />
+      </instancedMesh>
     </group>
   );
 };
@@ -163,6 +192,9 @@ const ProjectShard: React.FC<{ project: any, index: number, total: number }> = (
       );
     }
   }, [project.imageUrl]);
+
+  const boxGeometry = useMemo(() => new THREE.BoxGeometry(4, 6, 0.2), []);
+  const edgesGeometry = useMemo(() => new THREE.EdgesGeometry(boxGeometry), [boxGeometry]);
 
   // Base position
   const angle = (index / total) * Math.PI * 2;
@@ -211,7 +243,7 @@ const ProjectShard: React.FC<{ project: any, index: number, total: number }> = (
       onClick={(e) => { e.stopPropagation(); setActiveProject3D(project.id); }}
     >
       <mesh>
-        <boxGeometry args={[4, 6, 0.2]} />
+        <primitive object={boxGeometry} />
         <meshStandardMaterial 
           map={texture || null}
           color={texture ? '#ffffff' : themeColor} 
@@ -224,7 +256,7 @@ const ProjectShard: React.FC<{ project: any, index: number, total: number }> = (
         />
       </mesh>
       <lineSegments>
-        <edgesGeometry args={[new THREE.BoxGeometry(4, 6, 0.2)]} />
+        <primitive object={edgesGeometry} />
         <lineBasicMaterial color={isHacked ? '#ff0000' : themeColor} transparent opacity={hovered ? 1.0 : 0.5} />
       </lineSegments>
     </group>

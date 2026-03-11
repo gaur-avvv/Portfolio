@@ -87,8 +87,8 @@ export const ParticleCore: React.FC = () => {
           transparent
           opacity={0.9}
         />
-        <pointLight intensity={40} color={activeColor} distance={18} decay={2} />
       </mesh>
+      <pointLight intensity={40} color={activeColor} distance={18} decay={2} />
     </group>
   );
 };
