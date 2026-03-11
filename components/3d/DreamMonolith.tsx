@@ -88,16 +88,16 @@ export const DreamMonolith: React.FC = () => {
         <Suspense fallback={<meshStandardMaterial color="#050505" metalness={1} roughness={0} emissive="#1e3a8a" emissiveIntensity={0.2} />}>
           <MonolithMaterial projectImageUrl={activeProject?.imageUrl || null} />
         </Suspense>
+        <pointLight intensity={5} color="#ffffff" distance={15} />
       </mesh>
-      <pointLight intensity={5} color="#ffffff" distance={15} />
 
       <mesh ref={ring1Ref}>
-        <torusGeometry args={[1, 0.012, 8, 60]} />
+        <torusGeometry args={[1, 0.012, 16, 120]} />
         <meshStandardMaterial color={activeColor} emissive={activeColor} emissiveIntensity={12} transparent opacity={0.6} />
       </mesh>
 
       <mesh ref={ring2Ref}>
-        <torusGeometry args={[1, 0.004, 8, 60]} />
+        <torusGeometry args={[1, 0.004, 16, 120]} />
         <meshStandardMaterial color={activeColor} emissive={activeColor} emissiveIntensity={8} transparent opacity={0.4} />
       </mesh>
     </group>

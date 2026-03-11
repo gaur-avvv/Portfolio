@@ -13,7 +13,6 @@ const TWINKLE_STAR_COUNT = 6000;
 const COSMIC_DUST_COUNT = 5000;
 const STAR_MIST_COUNT = 8000;
 const DARK_MATTER_COUNT = 30;
-const GLOWING_PARTICLE_COUNT = 2000;
 
 const vertexShader = `
   uniform float uTime;
@@ -101,12 +100,10 @@ export const DeepVoid: React.FC = () => {
   const twinkleStarsRef = useRef<THREE.Points>(null);
   const cosmicDustRef = useRef<THREE.Points>(null);
   const starMistRef = useRef<THREE.Points>(null);
-  const glowingParticlesRef = useRef<THREE.Points>(null);
-  const darkMatterRef = useRef<THREE.InstancedMesh>(null);
+  const darkMatterRef = useRef<THREE.Group>(null);
   const shaderRef = useRef<THREE.ShaderMaterial>(null);
   const starShaderRef = useRef<THREE.ShaderMaterial>(null);
   const glowingStarShaderRef = useRef<THREE.ShaderMaterial>(null);
-  const glowingParticlesShaderRef = useRef<THREE.ShaderMaterial>(null);
 
   // Generate the "Alpha & Omega" Atomic Swarm
   const atomicData = useMemo(() => {
@@ -240,28 +237,6 @@ export const DeepVoid: React.FC = () => {
     return pos;
   }, []);
 
-  const glowingParticleData = useMemo(() => {
-    const pos = new Float32Array(GLOWING_PARTICLE_COUNT * 3);
-    const colors = new Float32Array(GLOWING_PARTICLE_COUNT * 3);
-    const sizes = new Float32Array(GLOWING_PARTICLE_COUNT);
-    const palette = [
-      new THREE.Color('#ff00ff'), // Magenta
-      new THREE.Color('#00ffff'), // Cyan
-      new THREE.Color('#ffff00'), // Yellow
-    ];
-    for (let i = 0; i < GLOWING_PARTICLE_COUNT; i++) {
-      pos[i * 3] = (Math.random() - 0.5) * 1500;
-      pos[i * 3 + 1] = (Math.random() - 0.5) * 1500;
-      pos[i * 3 + 2] = (Math.random() - 0.5) * 1500 - 750;
-      const color = palette[Math.floor(Math.random() * palette.length)];
-      colors[i * 3] = color.r;
-      colors[i * 3 + 1] = color.g;
-      colors[i * 3 + 2] = color.b;
-      sizes[i] = Math.random() * 2 + 1;
-    }
-    return { pos, colors, sizes };
-  }, []);
-
   const cosmicDustData = useMemo(() => {
     const pos = new Float32Array(COSMIC_DUST_COUNT * 3);
     const colors = new Float32Array(COSMIC_DUST_COUNT * 3);
@@ -297,9 +272,6 @@ export const DeepVoid: React.FC = () => {
     }
     return data;
   }, []);
-
-  const darkMatterPositions = useRef(darkMatterData.map(d => d.position.clone()));
-  const tempObject = useMemo(() => new THREE.Object3D(), []);
 
   useFrame((state) => {
     const time = state.clock.getElapsedTime();
@@ -365,28 +337,15 @@ export const DeepVoid: React.FC = () => {
       starMistRef.current.rotation.y = time * 0.002;
     }
 
-    // Animate glowing particles
-    if (glowingParticlesRef.current) {
-      glowingParticlesRef.current.visible = scrollProgress > 0.8;
-      glowingParticlesRef.current.rotation.y = time * 0.01;
-      glowingParticlesRef.current.rotation.x = time * 0.005;
-    }
-
     // Animate dark matter spheres
     if (darkMatterRef.current) {
       darkMatterRef.current.visible = scrollProgress > 0.95;
-      darkMatterData.forEach((d, i) => {
-        const pos = darkMatterPositions.current[i];
-        pos.y += Math.sin(time * 0.2 + i) * d.speed * 50;
-        pos.x += Math.cos(time * 0.2 + i) * d.speed * 50;
-        pos.z += Math.sin(time * 0.1 + i) * d.speed * 20;
-        
-        tempObject.position.copy(pos);
-        tempObject.scale.setScalar(d.size);
-        tempObject.updateMatrix();
-        darkMatterRef.current.setMatrixAt(i, tempObject.matrix);
+      darkMatterRef.current.children.forEach((child, i) => {
+        const d = darkMatterData[i];
+        child.position.y += Math.sin(time * 0.2 + i) * d.speed * 50;
+        child.position.x += Math.cos(time * 0.2 + i) * d.speed * 50;
+        child.position.z += Math.sin(time * 0.1 + i) * d.speed * 20;
       });
-      darkMatterRef.current.instanceMatrix.needsUpdate = true;
     }
   });
 
@@ -478,20 +437,15 @@ export const DeepVoid: React.FC = () => {
         <pointsMaterial size={0.8} color="#ffffff" transparent opacity={0.1} blending={THREE.AdditiveBlending} depthWrite={false} />
       </points>
 
-      {/* Glowing Particles Layer */}
-      <points ref={glowingParticlesRef}>
-        <bufferGeometry>
-          <bufferAttribute attach="attributes-position" count={GLOWING_PARTICLE_COUNT} array={glowingParticleData.pos} itemSize={3} />
-          <bufferAttribute attach="attributes-color" count={GLOWING_PARTICLE_COUNT} array={glowingParticleData.colors} itemSize={3} />
-        </bufferGeometry>
-        <pointsMaterial size={1.5} vertexColors transparent opacity={0.6} blending={THREE.AdditiveBlending} depthWrite={false} />
-      </points>
-
       {/* Dark Matter Spheres */}
-      <instancedMesh ref={darkMatterRef} args={[undefined, undefined, darkMatterData.length]}>
-        <sphereGeometry args={[1, 16, 16]} />
-        <meshStandardMaterial color="#222" transparent opacity={0.3} />
-      </instancedMesh>
+      <group ref={darkMatterRef}>
+        {darkMatterData.map((d, i) => (
+          <mesh key={i} position={d.position}>
+            <sphereGeometry args={[d.size, 16, 16]} />
+            <meshStandardMaterial color="#222" transparent opacity={0.3} />
+          </mesh>
+        ))}
+      </group>
 
       {/* The Universal Atomic Swarm (Glittering Particles) */}
       <points ref={atomicRef}>

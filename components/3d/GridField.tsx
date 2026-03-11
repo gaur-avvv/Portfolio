@@ -7,8 +7,6 @@ export const GridField: React.FC = () => {
   const gridRef = useRef<THREE.GridHelper>(null);
   const activeColor = useStore((state) => state.activeColor);
   
-  const scrollProgress = useStore((state) => state.scrollProgress);
-  
   useFrame((state) => {
     if (gridRef.current) {
       gridRef.current.position.z = (state.clock.getElapsedTime() * 2) % 10;
@@ -16,7 +14,7 @@ export const GridField: React.FC = () => {
   });
 
   return (
-    <group rotation={[Math.PI / 2, 0, 0]} position={[0, -5, 0]} visible={scrollProgress >= 0.25}>
+    <group rotation={[Math.PI / 2, 0, 0]} position={[0, -5, 0]}>
       <gridHelper ref={gridRef} args={[100, 20, activeColor, "#0a192f"]} />
     </group>
   );

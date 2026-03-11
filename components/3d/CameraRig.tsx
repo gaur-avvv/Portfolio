@@ -8,8 +8,6 @@ import * as THREE from 'three';
 const easeInOutQuint = (t: number) => t < 0.5 ? 16 * t * t * t * t * t : 1 - Math.pow(-2 * t + 2, 5) / 2;
 const easeInOutCubic = (t: number) => t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
 const easeInOutSine = (t: number) => -(Math.cos(Math.PI * t) - 1) / 2;
-const easeInOutExpo = (t: number) => t === 0 ? 0 : t === 1 ? 1 : t < 0.5 ? Math.pow(2, 20 * t - 10) / 2 : (2 - Math.pow(2, -20 * t + 10)) / 2;
-const easeInQuint = (t: number) => t * t * t * t * t;
 
 export const CameraRig: React.FC = () => {
   const { camera } = useThree();
@@ -34,54 +32,56 @@ export const CameraRig: React.FC = () => {
       // Smooth orbital movement in Level 1
       const p = easeInOutSine(scrollProgress / 0.25);
       targetPos.set(
-        Math.cos(p * Math.PI * 0.5) * 14, // Slightly wider
-        2 + Math.sin(p * Math.PI) * 0.6,
-        Math.sin(p * Math.PI * 0.5) * 14
+        Math.cos(p * Math.PI * 0.5) * 12,
+        2 + Math.sin(p * Math.PI) * 0.5,
+        Math.sin(p * Math.PI * 0.5) * 12
       );
       targetLookAt.set(0, 0, 0);
     } 
     else if (scrollProgress < 0.5) {
       // DRAMATIC TRANSITION into Level 2 using easeInOutSine
       const p = easeInOutSine((scrollProgress - 0.25) / 0.25);
-      const startPos = new THREE.Vector3(14, 2, 2); 
-      const endPos = new THREE.Vector3(2, 0.5, -2); // Smoother, cinematic sweep focusing on Monolith
+      const startPos = new THREE.Vector3(0, 2.5, 12); 
+      const endPos = new THREE.Vector3(0, 0.8, -3.5); 
       
       targetPos.lerpVectors(startPos, endPos, p);
-      // Sweeping lookAt shift
-      targetLookAt.lerpVectors(new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, -5), p);
+      targetLookAt.lerpVectors(new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0.2, -8), p);
     } 
     else if (scrollProgress < 0.75) {
       const p = easeInOutCubic((scrollProgress - 0.5) / 0.25);
       targetPos.set(
-        Math.sin(p * Math.PI * 1.2) * 6, // Smoother sweep
-        Math.cos(p * Math.PI * 1.2) * 2,
-        -5 - p * 25
+        Math.sin(p * Math.PI * 1.5) * 5,
+        Math.cos(p * Math.PI * 1.5) * 2.5,
+        -5 - p * 28
       );
-      targetLookAt.set(0, 0, -20);
+      targetLookAt.set(0, 0, -22);
     }
     else if (scrollProgress < 0.85) {
       // DRAMATIC TRANSITION into Level 4 using easeInOutQuint
       const p = easeInOutQuint((scrollProgress - 0.75) / 0.1);
-      // Plunge deeper and more dramatically into HyperVoid
-      targetPos.set(Math.sin(p * Math.PI * 0.6) * 4, 0.5, -40 - p * 80); 
-      targetLookAt.set(0, 0, -200 - p * 300); 
-      camera.rotation.z = p * Math.PI * 0.8; 
+      targetPos.set(0, 0, -32 - p * 22);
+      targetLookAt.set(0, 0, -65);
+      camera.rotation.z = p * Math.PI * 0.2;
+    }
+    else if (scrollProgress < 0.95) {
+      // Experience Level
+      const p = easeInOutSine((scrollProgress - 0.85) / 0.1);
+      targetPos.set(0, 0, -150 - p * 100);
+      targetLookAt.set(0, 0, -300);
     }
     else {
-      // Dramatic final plunge (0.85 - 1.0)
-      const p = easeInOutQuint((scrollProgress - 0.85) / 0.15);
-      
-      // Dramatic spiral/plunge
+      // Terminal velocity plunge (Deep Void Infinity)
+      const p = easeInOutQuint((scrollProgress - 0.95) / 0.05);
       targetPos.set(
-        Math.sin(p * 12.0) * (20 * p), // Smoother spiral radius
-        Math.cos(p * 12.0) * (20 * p), 
-        -350 - p * 1000 // Further plunge
+        Math.sin(p * 4.0) * 15,
+        Math.cos(p * 4.0) * 15,
+        -250 - p * 350
       );
-      targetLookAt.set(0, 0, -1500); // Further lookAt
-      camera.rotation.z = p * Math.PI * 6.0; // Smoother spin
+      targetLookAt.set(0, 0, -600);
+      camera.rotation.z = 2 * Math.PI + p * Math.PI * 1.5;
       
       if (camera instanceof THREE.PerspectiveCamera) {
-        camera.fov = 45 + p * 100; // More dramatic FOV expansion
+        camera.fov = 45 + p * 85;
         camera.updateProjectionMatrix();
       }
     }
@@ -105,7 +105,7 @@ export const CameraRig: React.FC = () => {
     targetPos.x += Math.sin(time * 0.05) * 0.2;
     targetPos.y += Math.cos(time * 0.07) * 0.2;
 
-    const lerpFactor = activeProject3D ? 0.06 : (scrollProgress > 0.85 ? 0.008 : 0.025);
+    const lerpFactor = activeProject3D ? 0.08 : (scrollProgress > 0.75 ? 0.015 : 0.035);
     camera.position.lerp(targetPos, lerpFactor);
     currentLookAt.current.lerp(targetLookAt, 0.03);
     camera.lookAt(currentLookAt.current);

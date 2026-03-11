@@ -6,7 +6,6 @@ import { Settings } from './components/ui/Settings';
 import { ContentOverlay } from './components/ui/ContentOverlay';
 import { CustomCursor } from './components/ui/CustomCursor';
 import { ProjectDetailOverlay } from './components/ui/ProjectDetailOverlay';
-import { SentientAICore } from './components/ui/SentientAICore';
 import { useStore } from './store';
 
 const App: React.FC = () => {
@@ -43,7 +42,6 @@ const App: React.FC = () => {
       <Settings />
       <ContentOverlay />
       <ProjectDetailOverlay />
-      <SentientAICore />
 
       {/* Simple scroll hints */}
       <div className="fixed bottom-12 left-12 pointer-events-none opacity-40 text-[9px] tracking-[0.4em] flex flex-col gap-2 font-sans">

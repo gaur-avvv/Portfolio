@@ -12,6 +12,7 @@ import { ExperienceLevel } from './ExperienceLevel';
 import { CosmicParticles } from './CosmicParticles';
 import { StarryBackground } from './StarryBackground';
 import { CameraRig } from './CameraRig';
+import { GridField } from './GridField';
 import { useStore } from '../../store';
 
 export const Scene: React.FC = () => {
@@ -41,6 +42,7 @@ export const Scene: React.FC = () => {
         
         <Suspense fallback={null}>
           <StarryBackground />
+          <GridField />
           <VoxelWorld />
           <DreamMonolith />
           <ParticleCore />
