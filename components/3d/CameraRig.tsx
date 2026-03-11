@@ -8,6 +8,7 @@ import * as THREE from 'three';
 const easeInOutQuint = (t: number) => t < 0.5 ? 16 * t * t * t * t * t : 1 - Math.pow(-2 * t + 2, 5) / 2;
 const easeInOutCubic = (t: number) => t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
 const easeInOutSine = (t: number) => -(Math.cos(Math.PI * t) - 1) / 2;
+const easeInQuint = (t: number) => t * t * t * t * t;
 
 export const CameraRig: React.FC = () => {
   const { camera } = useThree();
@@ -42,10 +43,11 @@ export const CameraRig: React.FC = () => {
       // DRAMATIC TRANSITION into Level 2 using easeInOutSine
       const p = easeInOutSine((scrollProgress - 0.25) / 0.25);
       const startPos = new THREE.Vector3(0, 2.5, 12); 
-      const endPos = new THREE.Vector3(0, 0.8, -3.5); 
+      const endPos = new THREE.Vector3(0, 0.2, -2.0); // Zoom closer to Monolith
       
       targetPos.lerpVectors(startPos, endPos, p);
-      targetLookAt.lerpVectors(new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0.2, -8), p);
+      // Sweeping lookAt shift
+      targetLookAt.lerpVectors(new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0.1, -8), p);
     } 
     else if (scrollProgress < 0.75) {
       const p = easeInOutCubic((scrollProgress - 0.5) / 0.25);
@@ -59,29 +61,25 @@ export const CameraRig: React.FC = () => {
     else if (scrollProgress < 0.85) {
       // DRAMATIC TRANSITION into Level 4 using easeInOutQuint
       const p = easeInOutQuint((scrollProgress - 0.75) / 0.1);
-      targetPos.set(0, 0, -32 - p * 22);
-      targetLookAt.set(0, 0, -65);
-      camera.rotation.z = p * Math.PI * 0.2;
-    }
-    else if (scrollProgress < 0.95) {
-      // Experience Level
-      const p = easeInOutSine((scrollProgress - 0.85) / 0.1);
-      targetPos.set(0, 0, -150 - p * 100);
-      targetLookAt.set(0, 0, -300);
+      targetPos.set(Math.sin(p * Math.PI) * 5, 0, -35 - p * 40); // More dramatic sweep
+      targetLookAt.set(0, 0, -80);
+      camera.rotation.z = p * Math.PI * 0.5; // Increased rotation
     }
     else {
-      // Terminal velocity plunge (Deep Void Infinity)
-      const p = easeInOutQuint((scrollProgress - 0.95) / 0.05);
+      // Dramatic final plunge (0.85 - 1.0)
+      const p = easeInQuint((scrollProgress - 0.85) / 0.15); 
+      
+      // Dramatic spiral/plunge
       targetPos.set(
-        Math.sin(p * 4.0) * 15,
-        Math.cos(p * 4.0) * 15,
-        -250 - p * 350
+        Math.sin(p * 10.0) * (20 * p),
+        Math.cos(p * 10.0) * (20 * p),
+        -150 - p * 500
       );
       targetLookAt.set(0, 0, -600);
-      camera.rotation.z = 2 * Math.PI + p * Math.PI * 1.5;
+      camera.rotation.z = p * Math.PI * 4.0; // Faster spin
       
       if (camera instanceof THREE.PerspectiveCamera) {
-        camera.fov = 45 + p * 85;
+        camera.fov = 45 + p * 100; // More dramatic FOV expansion
         camera.updateProjectionMatrix();
       }
     }

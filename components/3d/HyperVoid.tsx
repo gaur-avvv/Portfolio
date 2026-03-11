@@ -75,9 +75,9 @@ export const HyperVoid: React.FC = () => {
   return (
     <group>
       {/* Ambient Neon Scene Glow - Enhanced */}
-      <pointLight ref={ambientLightRef} position={[0, 20, -45]} color="#facc15" intensity={50} distance={120} decay={1.5} />
-      <pointLight position={[15, -15, -45]} color="#facc15" intensity={30} distance={90} decay={1.5} />
-      <pointLight position={[-15, -15, -45]} color="#facc15" intensity={30} distance={90} decay={1.5} />
+      <pointLight ref={ambientLightRef} position={[0, 20, -45]} color="#facc15" intensity={150} distance={200} decay={1.2} />
+      <pointLight position={[15, -15, -45]} color="#facc15" intensity={100} distance={150} decay={1.2} />
+      <pointLight position={[-15, -15, -45]} color="#facc15" intensity={100} distance={150} decay={1.2} />
 
       {/* Scattering Neon Glow Particles */}
       <points ref={scatterRef}>
@@ -85,10 +85,10 @@ export const HyperVoid: React.FC = () => {
           <bufferAttribute attach="attributes-position" count={SCATTER_COUNT} array={scatterParticles} itemSize={3} />
         </bufferGeometry>
         <pointsMaterial 
-          size={0.14} 
+          size={0.2} 
           color="#facc15" 
           transparent 
-          opacity={0.35} 
+          opacity={0.6} 
           sizeAttenuation 
           blending={THREE.AdditiveBlending}
         />
@@ -97,29 +97,29 @@ export const HyperVoid: React.FC = () => {
       {/* Level 4 Architecture Gate */}
       <group ref={gateRef}>
         <mesh>
-          <torusGeometry args={[18, 0.03, 16, 120]} />
-          <meshStandardMaterial color="#facc15" emissive="#facc15" emissiveIntensity={1.0} wireframe opacity={0.12} transparent />
+          <torusGeometry args={[18, 0.05, 16, 120]} />
+          <meshStandardMaterial color="#facc15" emissive="#facc15" emissiveIntensity={5.0} wireframe opacity={0.3} transparent />
         </mesh>
       </group>
 
       {/* Level 4 Neural Singularity Core */}
       <group ref={coreRef} position={[0, 0, -40]}>
         <mesh>
-          <sphereGeometry args={[0.9, 32, 32]} />
-          <meshPhysicalMaterial color="#000000" emissive="#facc15" emissiveIntensity={8} metalness={1} roughness={0} />
+          <sphereGeometry args={[1.2, 32, 32]} />
+          <meshPhysicalMaterial color="#000000" emissive="#facc15" emissiveIntensity={15} metalness={1} roughness={0} />
         </mesh>
         
         <mesh rotation={[Math.PI/4, 0, 0]}>
-          <torusKnotGeometry args={[1.8, 0.08, 128, 16]} />
-          <meshStandardMaterial color="#facc15" emissive="#facc15" emissiveIntensity={5} wireframe transparent opacity={0.6} />
+          <torusKnotGeometry args={[2.2, 0.1, 128, 16]} />
+          <meshStandardMaterial color="#facc15" emissive="#facc15" emissiveIntensity={10} wireframe transparent opacity={0.8} />
         </mesh>
 
         <mesh>
-          <dodecahedronGeometry args={[3.2, 1]} />
-          <meshStandardMaterial color="#facc15" emissive="#facc15" emissiveIntensity={1.5} wireframe transparent opacity={0.15} />
+          <dodecahedronGeometry args={[4.0, 1]} />
+          <meshStandardMaterial color="#facc15" emissive="#facc15" emissiveIntensity={3.0} wireframe transparent opacity={0.3} />
         </mesh>
 
-        <pointLight intensity={45} color="#facc15" distance={70} decay={2} />
+        <pointLight intensity={100} color="#facc15" distance={100} decay={1.5} />
       </group>
 
       {/* Project Shards */}

@@ -1,8 +1,30 @@
 
 import { create } from 'zustand';
 import { AppState } from './types';
+import { db } from './src/firebase';
+import { doc, getDoc, setDoc, onSnapshot } from 'firebase/firestore';
 
-export const useStore = create<AppState>((set, get) => ({
+export const useStore = create<AppState>((set, get) => {
+  // Initialize persistence
+  const settingsRef = doc(db, 'settings', 'global');
+  
+  // Load initial settings
+  getDoc(settingsRef).then((docSnap) => {
+    if (docSnap.exists()) {
+      const data = docSnap.data();
+      set((state) => ({ ...state, ...data }));
+    }
+  });
+
+  // Listen for real-time updates
+  onSnapshot(settingsRef, (docSnap) => {
+    if (docSnap.exists()) {
+      const data = docSnap.data();
+      set((state) => ({ ...state, ...data }));
+    }
+  });
+
+  return {
   scrollProgress: 0,
   userName: 'Gaurav Singh',
   userTitle: 'Full-Stack Developer & 3D Artist',
@@ -122,14 +144,38 @@ export const useStore = create<AppState>((set, get) => ({
 
     return { scrollProgress: progress, activeColor };
   }),
-  setUserInfo: (name, title) => set({ userName: name, userTitle: title }),
-  setProfessionalInfo: (profileImage, location, availability, skills, socialLinks) => set({ profileImage, location, availability, skills, socialLinks }),
-  setProjects: (projects) => set({ projects }),
-  setThemeColor: (color) => set({ themeColor: color }),
-  setFontFamily: (font) => set({ fontFamily: font }),
-  setTextColor: (color) => set({ textColor: color }),
-  setCursorType: (type) => set({ cursorType: type }),
-  setSections: (sections) => set({ sections }),
+  setUserInfo: (name, title) => {
+    set({ userName: name, userTitle: title });
+    setDoc(settingsRef, { userName: name, userTitle: title }, { merge: true });
+  },
+  setProfessionalInfo: (profileImage, location, availability, skills, socialLinks) => {
+    set({ profileImage, location, availability, skills, socialLinks });
+    setDoc(settingsRef, { profileImage, location, availability, skills, socialLinks }, { merge: true });
+  },
+  setProjects: (projects) => {
+    set({ projects });
+    setDoc(settingsRef, { projects }, { merge: true });
+  },
+  setThemeColor: (color) => {
+    set({ themeColor: color });
+    setDoc(settingsRef, { themeColor: color }, { merge: true });
+  },
+  setFontFamily: (font) => {
+    set({ fontFamily: font });
+    setDoc(settingsRef, { fontFamily: font }, { merge: true });
+  },
+  setTextColor: (color) => {
+    set({ textColor: color });
+    setDoc(settingsRef, { textColor: color }, { merge: true });
+  },
+  setCursorType: (type) => {
+    set({ cursorType: type });
+    setDoc(settingsRef, { cursorType: type }, { merge: true });
+  },
+  setSections: (sections) => {
+    set({ sections });
+    setDoc(settingsRef, { sections }, { merge: true });
+  },
   toggleHack: () => set((state) => ({ 
     isHacked: !state.isHacked,
     themeColor: !state.isHacked ? '#00ffcc' : '#3b82f6'
@@ -166,4 +212,6 @@ export const useStore = create<AppState>((set, get) => ({
   setAiProvider: (provider) => set({ aiProvider: provider }),
   setApiKey: (provider, key) => set((state) => ({ apiKeys: { ...state.apiKeys, [provider]: key } })),
   toggleAiEnabled: () => set((state) => ({ isAiEnabled: !state.isAiEnabled })),
-}));
+  }
+});
+
