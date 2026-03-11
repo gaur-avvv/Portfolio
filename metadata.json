@@ -1,0 +1,7 @@
+{
+  "name": "The Verse: Pantheon Portfolio",
+  "description": "An immersive 3D portfolio featuring a sentient AI core and generative dream textures, inspired by the Netflix series Pantheon.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
